@@ -10,43 +10,35 @@ generator = TEG(
     heat_source_resistance=.01,
     heat_sink_resistance=.01,
     internal_contact_resistance=.01,
-    load_resistance=1,
+    load_resistance=3,
 )
 
-data = pd.read_csv("data/ambient_temperature.csv", delimiter=",")
-data["panel_temp"] = data["temp"] + 10
+data = pd.DataFrame()
+data["Temp Delta"] = range(0, 100, 5)
 
-sink_temp = 10
-
-# Calculate optimal_load_resistance
-data["optimal_load_resistance"] = [
-    generator.set_load_resistance(source_temp=st, sink_temp=sink_temp)
-    for st in data["panel_temp"]
-]
+sink_temp = 0
+data["Optimal Load Resistance"] = [generator.set_load_resistance(source_temp=st, sink_temp=sink_temp) for st in data["Temp Delta"]]
 
 fig = go.Figure()
 
 # Add Solar Panel Temperature vs Time
-fig.add_trace(go.Scatter(x=data["time"], y=data["panel_temp"], mode='lines', name='Solar Panel Temperature'))
-
-# Add Optimal Load Resistance vs Time
-fig.add_trace(go.Scatter(x=data["time"], y=data["optimal_load_resistance"], mode='lines', name='Optimal Load Resistance', yaxis='y2'))
+fig.add_trace(go.Scatter(x=data["Temp Delta"], y=data["Optimal Load Resistance"], mode='lines', name='Output Power'))
 
 # Update layout
 fig.update_layout(
-    title_text="Solar Panel Temperature and Optimal Load Resistance",
-    xaxis_title="Time",
-    yaxis_title="Solar Panel Temperature (°C)",
-
-    yaxis2=dict(
-        title="Optimal Load Resistance (Ω)",
-        overlaying='y',
-        side='right',
-        range=[min(data["optimal_load_resistance"]), max(data["optimal_load_resistance"])]
-    ),
-    showlegend=True
+    title_text="TEG Optimal Load Resistance vs Temperature Delta",
+    xaxis_title="Temperature Delta (°C)",
+    yaxis_title="Optimal load resistance (Ohm)",
 )
 
-fig.show()
+config = {
+  'toImageButtonOptions': {
+    'format': 'png', # one of png, svg, jpeg, webp
+    'filename': 'optimal_load_resistance.png',
+    'scale': 3 # Multiply title/legend/axis/canvas sizes by this factor
+  }
+}
 
-print(data)
+
+fig.show(config=config)
+

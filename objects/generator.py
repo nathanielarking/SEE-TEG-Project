@@ -55,6 +55,18 @@ class TEG:
     def set_load_resistance(self, source_temp: float, sink_temp: float) -> None:
         self.load_resistance = self.max_power_load_resistance(source_temp=source_temp, sink_temp=sink_temp)
         return self.load_resistance
+    
+    def voltage(self, hot_temp: float, cold_temp: float):
+        return (
+            0.5
+            * (hot_temp**2 - cold_temp**2)
+            * self.thermocouple.seebeck_coefficent
+        )
+    
+    def current(self, hot_temp: float, cold_temp: float):
+        return self.voltage(hot_temp=hot_temp, cold_temp=cold_temp) / (
+            self.load_resistance * self.electrical_restance
+        )
 
 
 @dataclass
